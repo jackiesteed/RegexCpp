@@ -1,4 +1,4 @@
-#ifndef __PARSER_H__
+ï»¿#ifndef __PARSER_H__
 #define __PARSER_H__
 
 #include <cstdlib>
@@ -14,7 +14,7 @@ using namespace std;
 typedef struct Node
 {
     TokenType token;
-    int subType; //<ByÕÅ·½Ñ© 2013-5-18>ÓÃÓÚ´¦ÀíÒ»ÖÖtoken»á¶ÔÓ¦¶àÖÖµÄÇéĞÎ.
+    int subType; //<Byå¼ æ–¹é›ª 2013-5-18>ç”¨äºå¤„ç†ä¸€ç§tokenä¼šå¯¹åº”å¤šç§çš„æƒ…å½¢.
     Node* left;
     Node* right;
 

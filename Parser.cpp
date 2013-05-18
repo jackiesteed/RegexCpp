@@ -1,4 +1,4 @@
-#include <iostream>
+ï»¿#include <iostream>
 #include "Parser.h"
 
 
@@ -147,7 +147,7 @@ Node* Parser::ParseAtom()
     }
     else
     {
-        cout << "³öÏÖÎ´ÄÜ´¦ÀíµÄtoken" << endl;
+        cout << "å‡ºç°æœªèƒ½å¤„ç†çš„token" << endl;
         return NULL;
     }
 
@@ -206,7 +206,7 @@ void Parser::DumpMidOrder(Node* root)
     }
     default:
     {
-        cout << "·Ç·¨µÄ·ûºÅ: " << root->token <<  endl;
+        cout << "éæ³•çš„ç¬¦å·: " << root->token <<  endl;
         return;
     }
     }
@@ -245,7 +245,7 @@ void Parser::DumpPostOrder(Node* root)
     {
         DumpPostOrder(root->left);
         DumpPostOrder(root->right);
-        cout << "$"; //<ByÕÅ·½Ñ© 2013-5-18>ÏÈÓÃÕâ¸öµ±Á¬½Ó·û°É.
+        cout << "$"; //<Byå¼ æ–¹é›ª 2013-5-18>å…ˆç”¨è¿™ä¸ªå½“è¿æ¥ç¬¦å§.
         break;
     }
     case DOT:
@@ -262,7 +262,7 @@ void Parser::DumpPostOrder(Node* root)
     }
     default:
     {
-        cout << "·Ç·¨µÄ·ûºÅ: " << root->token <<  endl;
+        cout << "éæ³•çš„ç¬¦å·: " << root->token <<  endl;
         return;
     }
     }
