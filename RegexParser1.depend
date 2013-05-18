@@ -1,0 +1,21 @@
+# depslib dependency file v1.0
+1368885812 source:d:\jackiecodeproject\c++\regexparser1\main.cpp
+	<iostream>
+	<fstream>
+	<string>
+	<vector>
+	<sstream>
+
+1368883111 source:d:\jackiecodeproject\c++\regexparser1\parser.cpp
+	<iostream>
+	"Parser.h"
+
+1368883223 d:\jackiecodeproject\c++\regexparser1\parser.h
+	<cstdlib>
+	<ctype.h>
+	<cstring>
+	<stack>
+	"Symbol.h"
+
+1368883254 d:\jackiecodeproject\c++\regexparser1\symbol.h
+
