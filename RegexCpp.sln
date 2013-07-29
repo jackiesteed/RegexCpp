@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RegexCpp", "RegexCpp\RegexCpp.vcxproj", "{8E801E17-E1C3-43D1-886E-17C584D9ED5B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8E801E17-E1C3-43D1-886E-17C584D9ED5B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{8E801E17-E1C3-43D1-886E-17C584D9ED5B}.Debug|Win32.Build.0 = Debug|Win32
+		{8E801E17-E1C3-43D1-886E-17C584D9ED5B}.Release|Win32.ActiveCfg = Release|Win32
+		{8E801E17-E1C3-43D1-886E-17C584D9ED5B}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
