@@ -39,6 +39,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)Binary\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)Temp\$(ProjectName)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -74,13 +76,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="NFA.h" />
+    <ClInclude Include="BruteForce.h" />
+    <ClInclude Include="Automata.h" />
     <ClInclude Include="Parser.h" />
+    <ClInclude Include="StdAfx.h" />
     <ClInclude Include="Symbol.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="NFA.cpp" />
+    <ClCompile Include="BruteFroce.cpp" />
+    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Automata.cpp" />
     <ClCompile Include="Parser.cpp" />
     <ClCompile Include="Symbol.cpp" />
   </ItemGroup>
