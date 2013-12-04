@@ -26,20 +26,19 @@ int main(int argc, char* argv[])
 	cout << "  3. debug <on|off>: Show running log or not" << endl;
 	cout << "  4. cls: Clear the screen" << endl;
 	cout << "==============================================================================" << endl;
-	Parser parser;
 	char* cmdline = new char[MAXN];
 	char* cmd;
 	char* pattern;
 	char* text;
 	char* para;
+	Parser parser;
 	Automata automata;
 
 	while(true)
 	{
 		cout << ">>>>";
 		cin.getline(cmdline, MAXN);
-		
-		
+
 		cmd = strtok(cmdline, " ");
 
 		if(0 == strcmp(cmd, "exit")) 
@@ -73,7 +72,13 @@ int main(int argc, char* argv[])
 				cout << "Incomplete parameters for [dump] command " << endl;
 			}
 			Node* root = parser.Parse(para); //½âÎöÊ÷
+			cout << "====================== Dump the syntax tree ======================" << endl;
 			parser.Dump(root);
+			cout << "==================================================================" << endl;
+			State* start = automata.CreateAutomata(root);
+			cout << "============= Dump the automata with fake states =================" << endl;
+			automata.Dump();
+			cout << "==================================================================" << endl;
 		}
 		else if(0 == strcmp(cmd, "debug"))
 		{
@@ -84,10 +89,13 @@ int main(int argc, char* argv[])
 			}
 			if(0 == strcmp(para, "on"))
 			{
+				parser.SetDebug(true);
 				automata.SetDebug(true);
+
 			}
 			else if(0 == strcmp(para, "off"))
 			{
+				parser.SetDebug(false);
 				automata.SetDebug(false);
 			}
 			else

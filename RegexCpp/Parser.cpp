@@ -18,6 +18,7 @@ namespace RegexCpp{
 		_buffer = new Node[MAXN];
 		_pos = 0;
 		_regex = new char[MAXN];
+		_debug = false;
 	}
 	Parser::~Parser()
 	{
@@ -27,8 +28,9 @@ namespace RegexCpp{
 
 	Node* Parser::Parse(char* regexStr)
 	{
+		//清空内部使用的buffer.
 		strcpy(_regex, regexStr);
-		_len = strlen(regexStr);
+		_len = strlen(regexStr); 
 		_pos = 0;
 		_used = 0;
 		return Parse();
@@ -42,6 +44,12 @@ namespace RegexCpp{
 		{
 			cout << "Parsing failure, exit unexpectedly at position " << _pos << endl;
 			return NULL;
+		}
+		if(_debug) 
+		{
+			cout << "====================== Dump the syntax tree ======================" << endl;
+			Dump(root);
+			cout << "==================================================================" << endl;
 		}
 		return root;
 	}
@@ -150,11 +158,12 @@ namespace RegexCpp{
 		Node* root = NULL;
 		char token = CurrentToken();
 
-		root = NewNode();
+		
 		if(token == '\\')
 		{
 			NextToken();
 			token = CurrentToken();
+			root = NewNode();
 
 			switch(token)
 			{
@@ -229,72 +238,48 @@ namespace RegexCpp{
 
 	}
 
-	void Parser::DumpPostOrder(Node* root)
+	void PrintCode(int code, int subType)
 	{
-		if(root == NULL) return;
-		switch(root->token)
+		if(code == -1) cout << "START" ;
+		else if(code == -2) cout << "END";
+		else if(code == FAKE) cout << "FAKE";
+		else if(code < 0)
 		{
-		case ALPHA:
-		case NUM:
-			{
-				cout << char(root->subType) ;
-				break;
-			}
-		case PLUS:
-			{
-				DumpPostOrder(root->left);
-				cout << "+";
-				break;
-			}
-		case STAR:
-			{
-				DumpPostOrder(root->left);
-				cout << "*";
-				break;
-			}
-		case QUESTION:
-			{
-				DumpPostOrder(root->left);
-				cout << "?";
-				break;
-			}
-		case CONCAT:
-			{
-				DumpPostOrder(root->left);
-				DumpPostOrder(root->right);
-				cout << "'"; //<By张方雪 2013-5-18>先用这个当连接符吧.
-				break;
-			}
-		case DOT:
-			{
-				cout << ".";
-				break;
-			}
-		case ALT:
-			{
-				DumpPostOrder(root->left);
-				DumpPostOrder(root->right);
-				cout << "|";
-				break;
-			}
-		case START:
-			{
-				DumpPostOrder(root->left);
-				cout << "^";
-				break;
-			}
-		default:
-			{
-				cout << "{Invalid token: " << root->token << "}" << endl;
-				return;
-			}
+			cout << "{Unknown state code in automata " << code << "}" << endl;
+			return;
 		}
+		if(code < 0) return;
+		if(isalnum(code)) 
+		{
+			cout << char(code);
+			return;
+		}
+		else if(code <= 15 && code >= 0)
+			cout << TokenString[code];
+		else cout << "{Unknown state code in automata " << code << "}" << endl;
+		if(subType != 0)
+		{
+			cout << "(" << char(subType) << ")";
+		}
+		
 	}
 
 	void Parser::Dump(Node* root)
 	{
-		DumpPostOrder(root);
+		if(root == NULL) return;
+		cout << root - _buffer << " {";
+		PrintCode(root->token, root->subType);
+		cout << ": ";
+		if(root->left) PrintCode(root->left->token, root->left->subType);
+		cout << " ";
+		if(root->right) PrintCode(root->right->token, root->right->subType);
+		cout << "} ";
+		if(root->left) cout << root->left - _buffer << " ";
+		if(root->right) cout << root->right - _buffer;
 		cout << endl;
+		Dump(root->left);
+		Dump(root->right);
 	}
+	
 }
 

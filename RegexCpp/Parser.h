@@ -42,6 +42,7 @@ namespace RegexCpp
 		~Parser();
 		Node* Parse(char* regexStr);
 		void Dump(Node* root);
+		void SetDebug(bool debug){_debug = debug;}
 
 	private:
 		Node* _buffer;
@@ -49,6 +50,7 @@ namespace RegexCpp
 		int _pos;
 		char* _regex;
 		int _len;
+		bool _debug;
 
 		Node* NewNode()
 		{
@@ -74,7 +76,7 @@ namespace RegexCpp
 		Node* ParseMulti();			//解析*好
 		Node* ParseSlash();			//解析\符号, 支持\d\D\w\W
 		Node* ParseStart();
-		void DumpPostOrder(Node* root);
+		
 
 	};
 }

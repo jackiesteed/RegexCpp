@@ -34,7 +34,7 @@ namespace RegexCpp
 	}
 
 	//<By张方雪 2013-5-20> 这里的NFA, 会使用许多FAKE的State节点, 为了方便, 使得一个Fragment 变成一入一出的.
-	//最后, 通过一个缩图函数, 把图缩成原有的样子.
+	//目前fake节点还不能被clear掉, 后续考虑做这件事.
 
 
 	Fragment* Automata::CreateAutomataWithFakeStates(Node* root)
@@ -44,11 +44,8 @@ namespace RegexCpp
 		case CONCAT:
 			{
 				Fragment* pre = CreateAutomataWithFakeStates(root->left);
-
 				assert(!(pre->end->out != NULL && pre->end->out1 != NULL));
-
 				Fragment* post = CreateAutomataWithFakeStates(root->right);
-
 				if(pre->end->out == NULL)
 					pre->end->out = post->start;
 				else 
@@ -227,13 +224,6 @@ namespace RegexCpp
 			Dump();
 			cout << "==================================================================" << endl;
 		}
-		/*ClearFakeStates(start);
-		if(_debug) 
-		{
-			cout << "============ Dump the automata without fake states ===============" << endl;
-			Dump(false);
-			cout << "==================================================================" << endl;
-		}*/
 		return start;
 	}
 
