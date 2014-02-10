@@ -5,6 +5,7 @@
 #include "Symbol.h"
 #include "Parser.h"
 #include "Automata.h"
+#include "ConsoleColor.h"
 
 
 using namespace std;
@@ -22,7 +23,6 @@ namespace RegexCpp
 		_next_list = new StateList();
 		_list_id = 0;
 		_debug = false;
-
 	}
 
 	Automata::~Automata()
@@ -35,7 +35,6 @@ namespace RegexCpp
 
 	//<By张方雪 2013-5-20> 这里的NFA, 会使用许多FAKE的State节点, 为了方便, 使得一个Fragment 变成一入一出的.
 	//目前fake节点还不能被clear掉, 后续考虑做这件事.
-
 
 	Fragment* Automata::CreateAutomataWithFakeStates(Node* root)
 	{
@@ -102,7 +101,7 @@ namespace RegexCpp
 			{
 				Fragment* core = CreateAutomataWithFakeStates(root->left);
 				Fragment* frag = NewFragment();
-				frag->start = frag->end = NewState();
+				frag->start = frag->end = NewState(); //保证了*属性.
 				frag->start->Init();
 				frag->start->out = core->start;
 				assert(!(core->end->out != NULL && core->end->out1 != NULL));
@@ -148,6 +147,8 @@ namespace RegexCpp
 		case NON_NUM:
 		case ALL_ALNUM:
 		case NON_ALNUM:
+		case START:
+		case END:
 			{
 				Fragment* frag = NewFragment();
 				frag->Init();
@@ -157,50 +158,22 @@ namespace RegexCpp
 				frag->end = core;
 				return frag;
 			}
-		case START:
+		case TRIVIAL:
 			{
-				Fragment* core = CreateAutomataWithFakeStates(root->left);
-				State* start = NewState();
-				start->Init(START);
-				start->out = core->start;
 				Fragment* frag = NewFragment();
 				frag->Init();
-				frag->start = start;
-				frag->end = core->end;
+				State* core = NewState();
+				core->Init(root->subType);
+				frag->start = core;
+				frag->end = core;
 				return frag;
+				break;
 			}
 		}
 
 		return NULL;
 	}
 
-	void Automata::ClearFakeStates(State* state)
-	{
-		if(state == NULL) return;
-		if(state->cleared) return;
-		state->cleared = true; //By Jackie 2013-12-3 为什么需要标记? 因为有向图中存在环
-
-		State* out = state->out;
-		State* out1 = state->out1;
-		ClearFakeStates(out);
-		ClearFakeStates(out1);
-		int cnt = 2;
-		if(NULL == out) cnt--;
-		if(NULL == out1) cnt--;
-		if(cnt > 1) return;
-		if(out != NULL && out->code == FAKE)
-		{
-			state->out = out->out;
-			state->out1 = out->out1;
-			return;
-		}
-		if(out1 != NULL && out1->code == FAKE)
-		{
-			state->out = out1->out;
-			state->out1 = out1->out1;
-			return;
-		}
-	}
 
 	//By Jackie 2013-12-1 主程入口.
 	State* Automata::CreateAutomata(Node* root) 
@@ -220,9 +193,9 @@ namespace RegexCpp
 		
 		if(_debug) 
 		{
-			cout << "============= Dump the automata with fake states =================" << endl;
+			cout << "===================== Dump the automata with fake states =====================" << endl;
 			Dump();
-			cout << "==================================================================" << endl;
+			cout << "==============================================================================" << endl;
 		}
 		return start;
 	}
@@ -237,6 +210,7 @@ namespace RegexCpp
 		return false;
 	}
 
+	//By Jackie 2014-1-2 在Step函数中, 集中控制一个状态的后继状态能不能进入下一个活动集合
 	void Automata::Step(int code)
 	{
 		_next_list->nStates = 0;
@@ -258,21 +232,22 @@ namespace RegexCpp
 				AddState(_next_list, state->out1);
 			}
 		}
-
 	}
 
 	//<By张方雪 2013-5-27>这个递归的添加状态, 保证每次都会把有效状态加进来.
+	//占位符不能进入状态集合, 直接把后继状态放进来
 	void Automata::AddState(StateList* list, State* state)
 	{
 		if(state == NULL || state->lastList == _list_id)
 		{
 			return;
 		}
+		
 		state->lastList = _list_id;
+		if(state->code == START && _text_start_pos != 0) return;
+		if(state->code == END && _text_end_pos != (strlen(_text)) - 1) return;
 
-		if(state->code == START && _text_pos != 0) return;
-
-		if(state->code == FAKE || state->code == START)
+		if(state->code == FAKE || state->code == START || state->code == END)
 		{
 			AddState(list, state->out);
 			AddState(list, state->out1);
@@ -292,6 +267,7 @@ namespace RegexCpp
 	bool Automata::Match(State* start, char* text)
 	{
 		int len = strlen(text);
+		_text = text;
 		bool bingo = false;
 		for(int i = 0; i < len; i++)
 		{
@@ -299,8 +275,9 @@ namespace RegexCpp
 			_current_list->nStates = 0;
 			_next_list->nStates = 0;
 			start->lastList = 0;
-			_text_pos = i;
-			ResetStates(start);
+			_text_start_pos = i;
+			_text_end_pos = i;
+			ResetStates(start); //每次把开始游标向后移动, 然后重新进行一次匹配过程
 			if(start->out != NULL)
 				AddState(_current_list, start->out);
 			if(start->out1 != NULL)
@@ -311,6 +288,7 @@ namespace RegexCpp
 			for(int j = i; j < len; j++)
 			{
 				int code = text[j];
+				_text_end_pos = j;
 				Step(code);
 				t = _current_list;
 				_current_list = _next_list;
@@ -319,16 +297,13 @@ namespace RegexCpp
 				{
 					last = max(last, j);
 				}
-				
 			}
 			if(last != -1)
 			{
-				::SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),FOREGROUND_INTENSITY | FOREGROUND_GREEN);
-				cout << "Match: ";
+				cout << green << "Match: ";
 				for(int k = i; k <= last; k++) cout << text[k];
 				cout << " [" << i << "," << last << "]";
-				cout << endl;
-				::SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED );
+				cout << flushcolor;
 				bingo = true;
 				i = last;
 			}
@@ -336,9 +311,7 @@ namespace RegexCpp
 		
 		if(!bingo) 
 		{
-			::SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),FOREGROUND_INTENSITY | FOREGROUND_RED);
-			cout << "Not matched -_-#" << endl;
-			::SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED );
+			cout << red << "No matched text" << flushcolor;
 		}
 		return bingo;
 	}
@@ -360,7 +333,7 @@ namespace RegexCpp
 			{
 				cout << "T ";
 			}
-			else if(list->list[i]->code == ALL_ALNUM || list->list[i]->code == NON_ALNUM || list->list[i]->code == ALL_NUM || list->list[i]->code == NON_NUM)
+			else if(list->list[i]->code >= 0 && list->list[i]->code <= 15)
 			{
 				cout << TokenString[list->list[i]->code] << " " ;
 			}
@@ -385,12 +358,12 @@ namespace RegexCpp
 	}
 	void Automata::PrintCode(int code)
 	{
-		if(code == -1) cout << "START" ;
-		else if(code == -2) cout << "END";
+		if(code == -1) cout << "S" ;
+		else if(code == -2) cout << "T";
 		else if(code == FAKE) cout << "FAKE";
 		else if(code < 0)
 		{
-			cout << "{Unknown state code in automata " << code << "}" << endl;
+			cout << red << "{Unknown state code in automata " << code << "}" << flushcolor;
 			return;
 		}
 		if(code < 0) return;
@@ -401,7 +374,7 @@ namespace RegexCpp
 		}
 		else if(code <= 15 && code >= 0)
 			cout << TokenString[code];
-		else cout << "{Unknown state code in automata " << code << "}" << endl;
+		else cout << red << "{Unknown state code in automata " << code << "}" << endl;
 	}
 	void Automata::Dump(bool showFakeStates)
 	{
@@ -418,7 +391,6 @@ namespace RegexCpp
 			{
 				cout << " ";
 				PrintCode(state->out->code);
-				
 			}
 			if(state->out1) 
 			{

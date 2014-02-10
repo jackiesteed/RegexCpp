@@ -43,6 +43,7 @@ namespace RegexCpp
 		Node* Parse(char* regexStr);
 		void Dump(Node* root);
 		void SetDebug(bool debug){_debug = debug;}
+		bool GetDebug(){return _debug;}
 
 	private:
 		Node* _buffer;
@@ -51,6 +52,7 @@ namespace RegexCpp
 		char* _regex;
 		int _len;
 		bool _debug;
+		bool _error;
 
 		Node* NewNode()
 		{
@@ -66,6 +68,8 @@ namespace RegexCpp
 			_pos++;
 		}
 
+		bool Validate(); //对于正则表达式的正确性合法性进行校验, 比如括号是否匹配
+
 		Node* Parse();				// recursive implementation
 		Node* ParseAlt();			// 解析|号
 		Node* ParseConcat();		// 连接符号解析, 连接符号是隐式的
@@ -75,9 +79,7 @@ namespace RegexCpp
 		Node* ParseAtom();			//解析一个元素
 		Node* ParseMulti();			//解析*好
 		Node* ParseSlash();			//解析\符号, 支持\d\D\w\W
-		Node* ParseStart();
 		
-
 	};
 }
 

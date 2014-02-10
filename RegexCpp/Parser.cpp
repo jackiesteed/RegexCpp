@@ -7,6 +7,7 @@ Parse解析正则表达式的字符串, 最终生成一个节点树
 #include "StdAfx.h"
 #include <iostream>
 #include "Parser.h"
+#include "ConsoleColor.h"
 
 using namespace std;
 
@@ -19,6 +20,7 @@ namespace RegexCpp{
 		_pos = 0;
 		_regex = new char[MAXN];
 		_debug = false;
+		_error = false;
 	}
 	Parser::~Parser()
 	{
@@ -33,10 +35,11 @@ namespace RegexCpp{
 		_len = strlen(regexStr); 
 		_pos = 0;
 		_used = 0;
+		_error = false;
 		return Parse();
 	}
 
-	//Parse基本就是一个设定好优先级的递归调用
+	//Parse基本就是一个设定好优先级的递归调用, 运算优先级越高的, 会越靠后被调用
 	Node* Parser::Parse()
 	{
 		Node* root =  ParseAlt();
@@ -45,26 +48,21 @@ namespace RegexCpp{
 			cout << "Parsing failure, exit unexpectedly at position " << _pos << endl;
 			return NULL;
 		}
+		if(_error)
+		{
+			cout << "Parsing failure, invalid pattern" << endl;
+			return NULL;
+		}
 		if(_debug) 
 		{
-			cout << "====================== Dump the syntax tree ======================" << endl;
+			cout << "============================ Dump the syntax tree ============================" << endl;
 			Dump(root);
-			cout << "==================================================================" << endl;
+			cout << "==============================================================================" << endl;
 		}
 		return root;
 	}
-	Node* Parser::ParseStart()
-	{
-		if(CurrentToken() != '^') return ParseConcat();
-		NextToken();
-		Node* root = ParseConcat();
-		Node* leftChild = root;
-		root = NewNode();
-		root->Init(START, 0, leftChild, NULL);
-		return root;
-	}
 
-	Node* Parser::ParseAlt()
+	Node* Parser::ParseAlt() //最外层处理|符号
 	{
 		Node* root = ParseConcat();
 		char token = CurrentToken();
@@ -84,16 +82,9 @@ namespace RegexCpp{
 	Node* Parser::ParseConcat()
 	{
 		char token = CurrentToken();
-
-		//ParseStart here
-		if(token == '^')
-		{
-			return ParseStart();
-		}
-
-		Node* root = ParseMulti();
+		Node* root = ParseMulti(); //+*符号处理
 		token = CurrentToken();
-		if(isalnum(token) || token == '(' || token == '.')
+		if(isalnum(token) || strchr("(.^$<>", token))
 		{
 			Node* leftChild = root;
 			Node* rightChild = ParseConcat();
@@ -139,7 +130,7 @@ namespace RegexCpp{
 			root = ParseAlt();
 			if(CurrentToken() != ')')
 			{
-				cout << "Error parsing  bracket at position " << _pos << endl;
+				//cout << "Error parsing  bracket at position " << _pos << endl;
 				return NULL;
 			}
 			NextToken();
@@ -189,7 +180,7 @@ namespace RegexCpp{
 				}
 			default:
 				{
-					cout << "Invalid operator at position " << _pos << endl;
+					//cout << "Invalid operator at position " << _pos << endl;
 					return NULL;
 				}
 			}
@@ -222,16 +213,38 @@ namespace RegexCpp{
 			NextToken();
 			return root;
 		}
-		else if(token == '.')
+		else if(strchr("<>,&^$.", token))
 		{
-			root = NewNode();
-			root->Init(DOT, 0, NULL, NULL);
-			NextToken();
+			if(token == '^')
+			{
+				root = NewNode();
+				root->Init(START, 0, NULL, NULL);
+				NextToken();
+			}
+			else if(token == '$')
+			{
+				root = NewNode();
+				root->Init(END, 0, NULL, NULL);
+				NextToken();
+			}
+			else if(token == '.')
+			{
+				root = NewNode();
+				root->Init(DOT, 0, NULL, NULL);
+				NextToken();
+			}
+			else
+			{
+				root = NewNode();
+				root->Init(TRIVIAL, token, NULL, NULL);
+				NextToken();
+			}
 			return root;
 		}
 		else
 		{
-			cout << "Unknown token at position " << _pos << endl;
+			//cout << "Unknown token at position " << _pos << endl;
+			_error = true;
 			return NULL;
 		}
 
@@ -240,12 +253,9 @@ namespace RegexCpp{
 
 	void PrintCode(int code, int subType)
 	{
-		if(code == -1) cout << "START" ;
-		else if(code == -2) cout << "END";
-		else if(code == FAKE) cout << "FAKE";
-		else if(code < 0)
+		if(code < 0)
 		{
-			cout << "{Unknown state code in automata " << code << "}" << endl;
+			cout << red << "{Unknown state code in automata " << code << "}" << flushcolor;
 			return;
 		}
 		if(code < 0) return;

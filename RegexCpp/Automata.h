@@ -15,7 +15,6 @@ namespace RegexCpp
 		State* out;		//出边1
 		State* out1;	//出边2
 		int lastList;	//记录上一次所在的链表, 判重用的.
-		bool cleared;	//在ClearFake节点的时候, 用来标记是否已经清理过
 		int id;			// <By张方雪 2013-5-27>这个id用来提示, 表示是哪个节点.
 
 		void Init(int code, State* out, State* out1)
@@ -24,7 +23,6 @@ namespace RegexCpp
 			this->out = out;
 			this->out1 = out1;
 			this->lastList = -1;
-			cleared = false;
 		}
 
 		void Init()
@@ -32,14 +30,12 @@ namespace RegexCpp
 			code = FAKE;
 			out = out1 = NULL;
 			lastList = -1;
-			cleared = false;
 		}
 		void Init(int code)
 		{
 			this->code = code;
 			out = out1 = NULL;
 			lastList = -1;
-			cleared = false;
 		}
 
 	}State;
@@ -66,22 +62,18 @@ namespace RegexCpp
 		int nStates;
 	}StateList;
 
-
-
 	class Automata
 	{
 	public:
 		Automata();
-		~Automata();//{}
-
+		~Automata();
 		Fragment* CreateAutomataWithFakeStates(Node* root); //从表达式树转化成NFA的图, 图只有一个入口, 所以用一个State* 表示即可
-		void ClearFakeStates(State* state);
 		State* CreateAutomata(Node* root);
-
 		bool Match(State* start, char* text);
 		void Dump(State* state);
 		void Dump(bool showFakeStates = true);
 		void SetDebug(bool debug){_debug = debug;}
+
 	private:
 		State* _state_buffer;
 		Fragment* _frag_buffer;
@@ -89,7 +81,9 @@ namespace RegexCpp
 		int _used_frag;
 		int _list_id;
 		bool _debug;
-		int _text_pos; //By Jackie 2013-12-2  记录当前是从text的什么位置开始匹配, 给^符号使用
+		int _text_start_pos; //By Jackie 2013-12-2  记录当前是从text的什么位置开始匹配, 给^符号使用
+		int _text_end_pos;
+		char* _text;
 		StateList* _current_list;
 		StateList* _next_list;
 		State* NewState(){return &_state_buffer[_used_state++];}

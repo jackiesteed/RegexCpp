@@ -32,9 +32,8 @@ namespace RegexCpp{
 		NON_NUM,
 		ALL_ALNUM,
 		NON_ALNUM,
+		TRIVIAL
 	};
-
-	
 
 	extern char TokenString[100][100];
 

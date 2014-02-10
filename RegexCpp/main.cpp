@@ -6,6 +6,7 @@
 #include "Parser.h"
 #include "Automata.h"
 #include "BruteForce.h"
+#include "ConsoleColor.h"
 
 using namespace std;
 
@@ -15,16 +16,13 @@ using namespace RegexCpp;
 
 int main(int argc, char* argv[])
 {
-	//cout << match("a*", "aaaaaa") << endl;
-	//system("pause");
 
 	cout << "=============================================================================="<< endl;
 	cout << "				 RegexCpp" << endl;
 	cout << "  0. exit: Quit the program" << endl;
 	cout << "  1. match <pattern> <text>: Do regex string matching" << endl;
-	cout << "  2. dump <pattern>: Do the syntax parsing for the regex string" << endl;
-	cout << "  3. debug <on|off>: Show running log or not" << endl;
-	cout << "  4. cls: Clear the screen" << endl;
+	cout << "  2. debug <on|off>: Show running log or not, default not" << endl;
+	cout << "  3. clear: Clear the screen" << endl;
 	cout << "==============================================================================" << endl;
 	char* cmdline = new char[MAXN];
 	char* cmd;
@@ -57,35 +55,23 @@ int main(int argc, char* argv[])
 			Node* root = parser.Parse(pattern); //½âÎöÊ÷
 			if(root == NULL)
 			{
-				cout << "Error parsing the pattern!!" << endl;
+				cout << red << "Error parsing the pattern!!" << flushcolor;
 				continue;
 			}
 			
 			State* start = automata.CreateAutomata(root);
 			bool bingo = automata.Match(start, text);
 		}
-		else if(0 == strcmp(cmd, "dump"))
-		{
-			para = strtok(NULL, " ");
-			if(para == NULL)
-			{
-				cout << "Incomplete parameters for [dump] command " << endl;
-			}
-			Node* root = parser.Parse(para); //½âÎöÊ÷
-			cout << "====================== Dump the syntax tree ======================" << endl;
-			parser.Dump(root);
-			cout << "==================================================================" << endl;
-			State* start = automata.CreateAutomata(root);
-			cout << "============= Dump the automata with fake states =================" << endl;
-			automata.Dump();
-			cout << "==================================================================" << endl;
-		}
 		else if(0 == strcmp(cmd, "debug"))
 		{
 			para = strtok(NULL, " ");
 			if(para == NULL)
 			{
-				cout << "Incomplete parameters for [debug] command " << endl;
+				if(parser.GetDebug())
+					cout << yellow << "Debug mode is on " << flushcolor;
+				else 
+					cout << yellow << "Debug mode is off " << flushcolor;
+				continue;
 			}
 			if(0 == strcmp(para, "on"))
 			{
@@ -100,18 +86,17 @@ int main(int argc, char* argv[])
 			}
 			else
 			{
-				cout << "Unknown command" << endl;
+				cout << red << "---------------------- Invalid parameters for [debug] command-------------------" << flushcolor;	
 			}
 		}
-		else if(0 == strcmp(cmd, "cls"))
+		else if(0 == strcmp(cmd, "clear"))
 		{
 			system("cls");
 		}
 		else
 		{
-			cout << "Unknown command" << endl;
+			cout << red << "--------------------------------Unknown command-------------------------------" << flushcolor;	
 		}
-		
 	}
 
 	return 0;

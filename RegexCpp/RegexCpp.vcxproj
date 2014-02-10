@@ -62,8 +62,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -79,6 +78,7 @@
   <ItemGroup>
     <ClInclude Include="BruteForce.h" />
     <ClInclude Include="Automata.h" />
+    <ClInclude Include="ConsoleColor.h" />
     <ClInclude Include="Parser.h" />
     <ClInclude Include="StdAfx.h" />
     <ClInclude Include="Symbol.h" />
